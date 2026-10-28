@@ -95,7 +95,7 @@ export async function addToCart(
 
 export async function getCart() {
   const cartId = getCookie(KEYS.CART_ID);
-  if (!cartId) return;
+  if (!cartId) return null;
 
   const { data, errors, extensions } = await client.request(getCartItemsQuery, {
     variables: { cartId, after: null }
