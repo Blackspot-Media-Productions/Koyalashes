@@ -1,4 +1,4 @@
-import { Link, type LinkComponentProps } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { cn } from "cn";
 import type { MouseEvent, ReactNode } from "react";
 

@@ -19,7 +19,7 @@ const productCategories = ["eyelashes", "wigs"];
 export default function Homepage() {
   const collections = useAtomValue(collectionsAtom);
 
-  const [prevActiveFilter, setPrevActiveFilter] = useState("eyelashes");
+  const [_prevActiveFilter, setPrevActiveFilter] = useState("eyelashes");
   const [activeFilter, setActiveFilter] = useState("eyelashes");
 
   const [prevTrendingFilter, setPrevTrendingFilter] = useState("eyelashes");

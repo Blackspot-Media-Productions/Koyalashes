@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, type ChangeEvent } from "react";
+import { useState, useEffect, useRef, type ChangeEvent } from "react";
 
 interface DualRangeSliderProps {
   min: number;
