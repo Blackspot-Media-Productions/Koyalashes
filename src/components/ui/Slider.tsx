@@ -56,10 +56,10 @@ export default function Slider({ showDots = true, ...props }: Props) {
         onMouseLeave={plugin.current.reset}
       >
         <CarouselContent className={props.ccClassName}>
-          {props.data.map((item) => {
+          {props.data.map((item, index) => {
             return (
               <CarouselItem
-                key={item[props.key] as string}
+                key={(item[props.key] as string) || `${Date.now()}-${index}`}
                 className={props.ciClassName}
               >
                 {props.render(item)}

@@ -34,6 +34,8 @@ export async function createCart(
 
   loading?.(false);
 
+  await getCart();
+
   return {
     errors,
     extensions,
@@ -46,10 +48,11 @@ export async function addToCart(
   quantity: number = 1,
   loading?: (status: boolean) => void,
 ) {
+
   const cartId = getCookie(KEYS.CART_ID);
   if (!cartId) {
     loading?.(true);
-    const result = await createCart(variantId);
+    const result = await createCart(variantId, quantity);
     loading?.(false);
     return {
       errors: result.errors,
@@ -67,9 +70,7 @@ export async function addToCart(
     },
   }) as ShopifyResponse<SCartAdd>;
 
-  console.log(data);
-
-  if (data.cartLinesAdd.userErrors.length === 0) {
+  if (!errors && data?.cartLinesAdd.userErrors.length === 0) {
     saveCookie({
       key: KEYS.CART_ID,
       value: data.cartLinesAdd.cart.id,

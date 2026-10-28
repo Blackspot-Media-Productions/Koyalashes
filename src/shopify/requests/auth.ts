@@ -2,6 +2,7 @@ import client from "~/lib/shopify-client";
 import {
   createAccessTokenMutation,
   fetchUserQuery,
+  logoutCustomerMutation,
   requestPswdResetMutation,
   resetPasswordMutation,
   signupMutation,
@@ -15,6 +16,10 @@ import type {
 } from "../types/auth.types";
 import { type ShopifyResponse } from "~/lib/types";
 import { handleToken } from "../utils";
+import { getDefaultStore } from "jotai";
+import { customerAtom } from "~/store/auth.store";
+import { deleteCookie, getCookie, KEYS } from "~/lib/utils";
+import { cartAtom } from "~/store/cart.store";
 
 /**
  * Authenticates a customer with their email and password to generate a Shopify Customer Access Token.
@@ -57,7 +62,7 @@ export async function createCustomer(input: CustomerInput) {
     return tokenResult;
   }
 
-  return { errors: null, data: data.customer };
+  return await fetchCustomer(tokenResult.data);
 }
 
 /**
@@ -77,7 +82,7 @@ export async function loginCustomer(input: {
 
   const tokenResult = handleToken(accessTokenResult);
   if (tokenResult.errors !== null) {
-    return tokenResult;
+    throw tokenResult.errors;
   }
 
   return await fetchCustomer(tokenResult.data);
@@ -97,6 +102,11 @@ export async function fetchCustomer(accessToken: string | null) {
   }) as ShopifyResponse<SCustomer>;
 
   if (errors) throw errors;
+
+  const store = getDefaultStore();
+  const customerData = data.customer;
+
+  store.set(customerAtom, customerData);
 
   return { errors: null, data: data.customer };
 }
@@ -144,4 +154,22 @@ export async function resetPassword(resetUrl: string, password: string) {
   }
 
   return { errors: null, data: null };
+}
+
+export async function logoutCustomer() {
+  const accessToken = getCookie(KEYS.CUSTOMER_TOKEN_COOKIE);
+  if (!accessToken) return null;
+  const { data, errors } = await client.request(logoutCustomerMutation, {
+    variables: { customerAccessToken: accessToken }
+  });
+
+  if (!errors && data?.customerAccessTokenDelete.userErrors.length === 0) {
+    const store = getDefaultStore();
+    store.set(customerAtom, null);
+    store.set(cartAtom, null);
+
+    deleteCookie(KEYS.CART_ID);
+    deleteCookie(KEYS.CHECKOUT_URL);
+    deleteCookie(KEYS.CUSTOMER_TOKEN_COOKIE);
+  }
 }

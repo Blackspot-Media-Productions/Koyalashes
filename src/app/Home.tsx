@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { Link } from "@tanstack/react-router";
 import { useAtomValue } from "jotai";
 import { Loader2, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -7,6 +8,7 @@ import Slider from "~/components/ui/Slider";
 import { type Collection, type Product } from "~/lib/types";
 import { getCurrencySymbolFromCode, getTimeFromMinutes } from "~/lib/utils";
 import { queryClient } from "~/main";
+import { addToCart } from "~/shopify/requests/cart";
 import {
   getLatestProducts,
   getProductByCategory,
@@ -18,6 +20,7 @@ const productCategories = ["eyelashes", "wigs"];
 
 export default function Homepage() {
   const collections = useAtomValue(collectionsAtom);
+  const [addingToCart, setAddingToCart] = useState<string | null>(null);
 
   const [_prevActiveFilter, setPrevActiveFilter] = useState("eyelashes");
   const [activeFilter, setActiveFilter] = useState("eyelashes");
@@ -35,7 +38,7 @@ export default function Homepage() {
   const { data: trending, isFetching: isPendingTrending } = useQuery({
     queryKey: ["trending-products", trendingFilter],
     queryFn: () => {
-      return getProductByCategory(trendingFilter, null, 5);
+      return getProductByCategory(trendingFilter, null, 20);
     },
     staleTime: getTimeFromMinutes(30),
     gcTime: getTimeFromMinutes(30),
@@ -45,8 +48,8 @@ export default function Homepage() {
     queryKey: ["latest-products"],
     queryFn: () => getLatestProducts(3),
     staleTime: getTimeFromMinutes(30),
-    gcTime: getTimeFromMinutes(30)
-  })
+    gcTime: getTimeFromMinutes(30),
+  });
 
   useEffect(() => {
     if (trendingFilter !== prevTrendingFilter) {
@@ -88,7 +91,15 @@ export default function Homepage() {
                       <h1 className="text-off-white text-5xl font-dm-serif mb-8">
                         {product.title}
                       </h1>
-                      <Button className="w-fit">Shop Now</Button>
+
+                      <Link
+                        to="/collection/$slug"
+                        params={{ slug: product.slug }}
+                        search={{ collection: "featured" }}
+                        className={`w-fit bg-primary text-near-black px-6 py-3.5 disabled:bg-off-white disabled:text-muted disabled:cursor-default!`}
+                      >
+                        Shop Now
+                      </Link>
                     </div>
                   </div>
                 </div>
@@ -137,7 +148,12 @@ export default function Homepage() {
                     <p className="font-dm-serif text-5xl uppercase text-center text-white">
                       {collection.title}
                     </p>
-                    <Button>Shop now</Button>
+                    <Button
+                      as="link"
+                      href={`/collections?productType=wigs&priceRange=0%2C200&collections=${collection.slug}`}
+                    >
+                      Shop now
+                    </Button>
                   </div>
                 </div>
               );
@@ -180,15 +196,22 @@ export default function Homepage() {
         )}
         <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {!isPendingTrending &&
-            trending?.products.map((product) => {
+            trending?.products.slice(0, 4).map((product) => {
               const currency =
                 product.priceRange?.maxVariantPrice.currencyCode || "GBP";
               const amount =
                 Number(product.priceRange?.maxVariantPrice.amount) || 0;
               const price = getCurrencySymbolFromCode(currency, amount);
+              const variant = product.variants?.[0].id || "";
+
+              const isAddingToCart = addingToCart === product.id;
+              const AddIcon = isAddingToCart ? Loader2 : Plus;
 
               return (
-                <div key={product.id} className="h-117 flex flex-col gap-y-4">
+                <div
+                  key={product.id}
+                  className="group h-117 flex flex-col gap-y-4"
+                >
                   <img
                     src={product.images[0].url}
                     alt={`${product.slug} cover image`}
@@ -196,14 +219,33 @@ export default function Homepage() {
                   />
                   <div className="shrink-0 flex items-start justify-between">
                     <div className="flex flex-col gap-y-2">
-                      <p className="text-near-black">{product.title}</p>
+                      <Link
+                        to="/collection/$slug"
+                        className="group-hover:underline underline-offset-4"
+                        params={{ slug: product.slug }}
+                        search={{ collection: product.collections?.[0]?.slug }}
+                      >
+                        <p className="text-near-black">{product.title}</p>
+                      </Link>
                       <span className="text-sm text-muted">{price}</span>
                     </div>
                     <button
                       type="button"
+                      onClick={async () => {
+                        setAddingToCart(product.id);
+                        await addToCart(variant);
+                        setAddingToCart(null);
+                      }}
                       className="w-8 h-8 rounded-full bg-near-black grid place-content-center"
                     >
-                      <Plus size={19} className="text-primary" />
+                      <AddIcon
+                        size={19}
+                        className={
+                          isAddingToCart
+                            ? "animate-spin text-white"
+                            : "text-primary"
+                        }
+                      />
                     </button>
                   </div>
                 </div>
@@ -235,9 +277,13 @@ export default function Homepage() {
                   const amount =
                     Number(product.priceRange?.maxVariantPrice.amount) || 0;
                   const price = getCurrencySymbolFromCode(currency, amount);
+                  const variant = product.variants?.[0].id || "";
+
+                  const isAddingToCart = addingToCart === product.id;
+                  const AddIcon = isAddingToCart ? Loader2 : Plus;
 
                   return (
-                    <div key={product.id} className="h-145 flex flex-col">
+                    <div key={product.id} className="group h-145 flex flex-col">
                       <img
                         src={product.images[0].url}
                         alt={`${product.slug} cover image`}
@@ -245,17 +291,42 @@ export default function Homepage() {
                       />
                       <div className="shrink-0 bg-white px-2.5 py-6 flex items-center justify-between">
                         <div className="flex items-center gap-x-4.5">
-                          <img src={product.images[0].url} alt={`${product.slug} cover image mini`} className="shrink-0 w-12.25 h-15 object-cover" />
+                          <img
+                            src={product.images[0].url}
+                            alt={`${product.slug} cover image mini`}
+                            className="shrink-0 w-12.25 h-15 object-cover"
+                          />
                           <div className="flex flex-col gap-y-2">
-                            <p className="text-sm xl:text-base text-near-black">{product.title}</p>
+                            <Link
+                              to="/collection/$slug"
+                              className="group-hover:underline underline-offset-4"
+                              params={{ slug: product.slug }}
+                              search={{ collection: product.collections?.[0]?.slug }}
+                            >
+                              <p className="text-sm xl:text-base text-near-black">
+                                {product.title}
+                              </p>
+                            </Link>
                             <span className="text-sm text-muted">{price}</span>
                           </div>
                         </div>
                         <button
                           type="button"
+                          onClick={async () => {
+                            setAddingToCart(product.id);
+                            await addToCart(variant);
+                            setAddingToCart(null);
+                          }}
                           className="w-8 h-8 rounded-full bg-near-black grid place-content-center"
                         >
-                          <Plus size={19} className="text-primary" />
+                          <AddIcon
+                            size={19}
+                            className={
+                              isAddingToCart
+                                ? "animate-spin text-white"
+                                : "text-primary"
+                            }
+                          />
                         </button>
                       </div>
                     </div>

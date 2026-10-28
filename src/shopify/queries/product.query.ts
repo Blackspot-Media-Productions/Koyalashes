@@ -194,6 +194,20 @@ export const productsByCollectionQuery = (count: number = 4) => `
                 }
               }
             }
+            variants(first: 3) {
+              edges {
+                cursor
+                node {
+                  id
+                  title
+                  quantityAvailable
+                  price {
+                    amount
+                    currencyCode
+                  }
+                }
+              }
+            }
             priceRange { # Returns range of prices for a product in the shop's currency.
               minVariantPrice {
                 amount

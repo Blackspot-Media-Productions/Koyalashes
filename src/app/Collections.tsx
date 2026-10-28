@@ -62,7 +62,7 @@ export default function Collections() {
   const collections = useAtomValue(collectionsAtom);
   const search = useSearch({ from: "/collections" });
 
-  const [sortBy, setSortBy] = useState<"featured" | "newest" | "oldest">("featured");
+  const [sortBy, setSortBy] = useState<"featured" | "newest" | "oldest">("newest");
 
   const [selectedFilters, setSelectedFilters] = useState({
     products: [...search.productType.split(",")],
@@ -131,7 +131,6 @@ export default function Collections() {
     const priceRangeString = priceRangeArray.join(",");
 
     const urlObject: typeof search = {
-      page: search.page,
       productType: search.productType,
       priceRange: search.priceRange,
     };
@@ -202,10 +201,7 @@ export default function Collections() {
                 navigate({
                   to: "/collections",
                   search: {
-                    page: search.page,
                     productType: "wigs",
-                    // collections: "",
-                    // sortBy: "",
                     priceRange: "0,200",
                   },
                   replace: true,

@@ -1,5 +1,5 @@
 import { useSuspenseQuery, type QueryClient } from "@tanstack/react-query";
-import { createRootRouteWithContext, Outlet } from "@tanstack/react-router";
+import { createRootRouteWithContext, Outlet, useLocation } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import { useSetAtom } from "jotai";
 import { useEffect } from "react";
@@ -13,6 +13,7 @@ export interface KRouterContext {
 }
 
 const RootLayout = () => {
+  const {pathname} = useLocation()
   const { data: result } = useSuspenseQuery(collectionQueryOptions);
   useSuspenseQuery(cartQueryOptions);
 
@@ -23,6 +24,13 @@ const RootLayout = () => {
       updateCollections(result.collections);
     }
   }, [result]);
+
+  useEffect(() => {
+    window.scroll({
+      top: 0,
+      behavior: 'smooth'
+    })
+  }, [pathname]);
 
   return (
     <>

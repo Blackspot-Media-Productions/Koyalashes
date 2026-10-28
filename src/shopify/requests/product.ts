@@ -114,7 +114,10 @@ export async function getProductByCategory(
   return {
     errors,
     extensions,
-    products: toProductsArrayFromSearch(data.search),
+    products: toProductsArrayFromSearch(data.search).toSorted(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+    ),
   };
 }
 
@@ -152,6 +155,6 @@ export async function getFilteredProducts(
       (a, b) =>
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
     ),
-    pagination: data.search.pageInfo
+    pagination: data.search.pageInfo,
   };
 }

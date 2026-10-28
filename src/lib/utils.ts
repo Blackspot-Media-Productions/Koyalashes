@@ -27,6 +27,10 @@ export function getCookie(key: string) {
   return Cookie.get(key);
 }
 
+export function deleteCookie(key: string) {
+  return Cookie.remove(key);
+}
+
 export function getTimeFromMinutes(
   minutes: number,
   to: TimeUnits = "milliseconds",

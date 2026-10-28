@@ -3,7 +3,6 @@ import Collections from '~/app/Collections'
 import { z } from "zod";
 
 const collectionSearchSchema = z.object({
-  page: z.number().catch(1),
   productType: z.enum(["wigs", "eyelashes", "wigs,eyelashes", "eyelashes,wigs"]).catch("wigs"),
   collections: z.string().optional(),
   priceRange: z.string().catch("0,200"),

@@ -68,3 +68,15 @@ export const resetPasswordMutation = `
     }
   }
 `;
+
+export const logoutCustomerMutation = `
+  mutation Logout($customerAccessToken: String!) {
+    customerAccessTokenDelete(customerAccessToken: $customerAccessToken) {
+      deletedCustomerAccessTokenId
+      userErrors {
+        field
+        message
+      }
+    }
+  }
+`;

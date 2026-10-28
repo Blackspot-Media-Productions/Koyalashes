@@ -2,12 +2,15 @@ import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { useAtomValue } from "jotai";
 import { collectionsAtom } from "~/store/app.store";
 import { ChevronDown, Search, User2, X } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import TextField from "./ui/TextField";
 import Button from "./Button";
 import { cartAtom } from "~/store/cart.store";
 import { getCurrencySymbolFromCode } from "~/lib/utils";
 import { removeCartItem, updateCartQuantity } from "~/shopify/requests/cart";
+import AuthModal from "./AuthModal";
+import { customerAtom } from "~/store/auth.store";
+import { logoutCustomer } from "~/shopify/requests/auth";
 
 function NavbarDropdown(props: {
   title: string;
@@ -46,12 +49,20 @@ export default function Navbar() {
   const navigate = useNavigate();
   const { pathname } = useLocation();
 
+  const customer = useAtomValue(customerAtom);
   const collections = useAtomValue(collectionsAtom);
   const cart = useAtomValue(cartAtom);
 
   const [updatingCartQuantity, setUpdatingCartQuantity] = useState(false);
   const [showCart, setShowCart] = useState(false);
   const [discountCode, setDiscountCode] = useState("");
+
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
+
+  useEffect(() => {
+    if (customer && showAuthModal) setShowAuthModal(false);
+  }, [customer, showAuthModal]);
 
   return (
     <>
@@ -95,11 +106,47 @@ export default function Navbar() {
             <Search size={24} className="text-off-white" />
           </button>
 
-          <button type="button">
-            <User2 size={24} className="text-off-white" />
-          </button>
+          <div className={customer ? "relative group" : ""}>
+            <button
+              type="button"
+              onClick={() => setShowAuthModal(true)}
+              className="pt-2"
+            >
+              <User2 size={24} className="text-off-white" />
+            </button>
+
+            {customer && <div className="hidden group-hover:flex flex-col gap-y-2 absolute right-0 p-4 mt-4 bg-white before:absolute before:-top-4 before:h-4 before:w-full">
+              <div className="flex gap-x-3 border-b border-input pb-4">
+                <span className="w-9 h-9 bg-grey rounded-full grid place-content-center">
+                  <User2 size={24} className="text-muted" />
+                </span>
+                <div>
+                  <p>
+                    {customer?.firstName} {customer?.lastName}
+                  </p>
+                  <span className="text-sm text-muted">{customer?.email}</span>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={async () => {
+                  setLoggingOut(true);
+                  await logoutCustomer();
+                  setLoggingOut(false);
+                }}
+                className="rounded text-red-500 text-sm text-left hover:bg-red-100 py-1 px-3"
+              >
+                Log out
+              </button>
+            </div>}
+          </div>
         </div>
       </nav>
+
+      {!customer && showAuthModal && (
+        <AuthModal closeModal={() => setShowAuthModal(false)} />
+      )}
 
       <div
         className={`${showCart ? "w-full" : "w-0"} h-screen bg-near-black/60 fixed z-99999 top-0 left-0`}
@@ -227,9 +274,15 @@ export default function Navbar() {
               <p className="text-lg text-near-black">Subtotal</p>
               <p className="text-lg text-near-black">
                 {(() => {
-                  const currency = cart?.items[0]?.cost.totalAmount.currencyCode || "GBP";
-                  const amount = cart?.items?.reduce((total, item) => total + Number(item.cost.totalAmount.amount), 0) || 0;
-                  return getCurrencySymbolFromCode(currency, amount)
+                  const currency =
+                    cart?.items[0]?.cost.totalAmount.currencyCode || "GBP";
+                  const amount =
+                    cart?.items?.reduce(
+                      (total, item) =>
+                        total + Number(item.cost.totalAmount.amount),
+                      0,
+                    ) || 0;
+                  return getCurrencySymbolFromCode(currency, amount);
                 })()}
               </p>
             </div>
@@ -239,7 +292,9 @@ export default function Navbar() {
               href={(cart?.items.length || 0) > 0 ? cart?.checkoutUrl : ""}
               isExternalLink
               disabled={cart?.items.length === 0}
-              action={(e) => cart?.items.length === 0 ? e.preventDefault() : null}
+              action={(e) =>
+                cart?.items.length === 0 ? e.preventDefault() : null
+              }
               className="w-full block text-center"
             >
               Checkout
@@ -253,7 +308,6 @@ export default function Navbar() {
                   navigate({
                     to: "/collections",
                     search: {
-                      page: 1,
                       priceRange: "0,200",
                       productType: "wigs",
                     },

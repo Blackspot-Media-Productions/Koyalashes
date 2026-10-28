@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { Link } from "@tanstack/react-router";
 import { ArrowLeft, ArrowRight, Loader2, Plus } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import {
@@ -162,7 +163,7 @@ export default function CollectionProducts(props: Props) {
             const AddIcon = isAddingToCart ? Loader2 : Plus;
 
             return (
-              <div key={product.id} className="h-117 flex flex-col gap-y-4">
+              <div key={product.id} className="group h-117 flex flex-col gap-y-4">
                 <img
                   src={product.images[0].url}
                   alt={`${product.slug} cover image`}
@@ -170,7 +171,14 @@ export default function CollectionProducts(props: Props) {
                 />
                 <div className="shrink-0 flex items-start justify-between">
                   <div className="flex flex-col gap-y-2">
-                    <p className="text-near-black">{product.title}</p>
+                    <Link
+                      to="/collection/$slug"
+                      className="group-hover:underline underline-offset-4"
+                      params={{ slug: product.slug }}
+                      search={{ collection: product.collections?.[0]?.slug }}
+                    >
+                      <p className="text-near-black">{product.title}</p>
+                    </Link>
                     <span className="text-sm text-muted">{price}</span>
                   </div>
                   <button
@@ -180,6 +188,7 @@ export default function CollectionProducts(props: Props) {
                       await addToCart(variant)
                       setAddingToCart(null);
                     }}
+                    disabled={addingToCart !== null}
                     className="w-8 h-8 rounded-full bg-near-black grid place-content-center"
                   >
                     <AddIcon size={19} className={isAddingToCart ? "animate-spin text-white" : "text-primary"} />
