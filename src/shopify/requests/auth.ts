@@ -46,7 +46,7 @@ async function createCustomerAccessToken(input: {
  * @returns {Promise<{ errors: any[] | null; data: SCustomer | null }>} An object containing either the created customer data or Shopify user/access token errors.
  */
 export async function createCustomer(input: CustomerInput) {
-  const { data, errors } = (await client.request(signupMutation, {
+  const { errors } = (await client.request(signupMutation, {
     variables: { input },
   })) as ShopifyResponse<SCustomer>;
 

@@ -130,6 +130,7 @@ export default function Navbar() {
 
               <button
                 type="button"
+                disabled={loggingOut}
                 onClick={async () => {
                   setLoggingOut(true);
                   await logoutCustomer();

@@ -2,6 +2,7 @@ import { useState, type SubmitEvent } from "react";
 import TextField from "./ui/TextField";
 import Button from "./Button";
 import { createCustomer, loginCustomer } from "~/shopify/requests/auth";
+import { Loader2 } from "lucide-react";
 
 type Props = {
   closeModal: () => void;
@@ -36,6 +37,7 @@ export default function AuthModal(props: Props) {
         return;
       }
 
+      setInProgress(true);
       await loginCustomer(payload);
     } catch (error) {
       let errorMessage = "Something went wrong";
@@ -44,6 +46,8 @@ export default function AuthModal(props: Props) {
       }
 
       setError((current) => ({ ...current, login: errorMessage }));
+    } finally {
+      setInProgress(false)
     }
   };
 
@@ -76,6 +80,7 @@ export default function AuthModal(props: Props) {
         return;
       }
 
+      setInProgress(true)
       await createCustomer(payload);
     } catch (error) {
       let errorMessage = "Something went wrong";
@@ -84,6 +89,8 @@ export default function AuthModal(props: Props) {
       }
 
       setError((current) => ({ ...current, login: errorMessage }));
+    } finally {
+      setInProgress(false)
     }
   };
 
@@ -137,7 +144,7 @@ export default function AuthModal(props: Props) {
                   name="password"
                   placeholder="Password"
                 />
-                <Button type="submit">Sign in</Button>
+                <Button type="submit" disabled={inProgress}>{inProgress ? <Loader2 size={19} /> : "Sign in"}</Button>
               </form>
             </div>
           ) : (
@@ -198,7 +205,7 @@ export default function AuthModal(props: Props) {
                     Send me updates, discounts, and news via email.
                   </label>
                 </div>
-                <Button type="submit">Create Account</Button>
+                <Button type="submit" disabled={inProgress}>{inProgress ? <Loader2 size={19} /> : "Create Account"}</Button>
               </form>
             </div>
           )}
