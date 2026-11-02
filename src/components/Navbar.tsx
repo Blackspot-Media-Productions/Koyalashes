@@ -1,11 +1,10 @@
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
-import { useAtomValue } from "jotai";
-import { collectionsAtom } from "~/store/app.store";
+import { useAtom, useAtomValue } from "jotai";
 import { ChevronDown, Search, User2, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import TextField from "./ui/TextField";
 import Button from "./Button";
-import { cartAtom } from "~/store/cart.store";
+import { cartAtom, prevCartLengthAtom } from "~/store/cart.store";
 import { getCurrencySymbolFromCode } from "~/lib/utils";
 import { removeCartItem, updateCartQuantity } from "~/shopify/requests/cart";
 import AuthModal from "./AuthModal";
@@ -50,7 +49,8 @@ export default function Navbar() {
   const { pathname } = useLocation();
 
   const customer = useAtomValue(customerAtom);
-  const collections = useAtomValue(collectionsAtom);
+
+  const [prevCartCount, setPrevCartCount] = useAtom(prevCartLengthAtom);
   const cart = useAtomValue(cartAtom);
 
   const [updatingCartQuantity, setUpdatingCartQuantity] = useState(false);
@@ -64,18 +64,31 @@ export default function Navbar() {
     if (customer && showAuthModal) setShowAuthModal(false);
   }, [customer, showAuthModal]);
 
+  useEffect(() => {
+    if ((cart?.items.length || 0) > 0) {
+      if ((cart?.items.length || 1) > prevCartCount) {
+        setShowCart(true);
+      }
+
+      const newPrevCartCount = (cart?.items.length || 1) - 1;
+      setPrevCartCount(newPrevCartCount);
+    } else {
+      setPrevCartCount(0);
+    }
+  }, [cart]);
+
   return (
     <>
       <nav className="absolute z-999 top-0 left-1/2 -translate-x-1/2 kl-container flex items-center justify-between py-9">
         {/* links */}
         <div className="flex items-center gap-x-5 font-dm-serif text-off-white">
           <NavbarDropdown
-            title="Collections"
-            link="/collections"
-            items={collections.map((c) => ({
-              label: c.title,
-              link: `/collections?collections=${c.slug}`,
-            }))}
+            title="Products"
+            link="/products"
+            items={[
+              { label: "Wigs", link: `/products?productType=wigs` },
+              { label: "Eyelashes", link: `/products?productType=eyelashes` },
+            ]}
           />
           <Link to="/" className="py-2.5">
             Support
@@ -153,106 +166,108 @@ export default function Navbar() {
         className={`${showCart ? "w-full" : "w-0"} h-screen bg-near-black/60 fixed z-99999 top-0 left-0`}
       >
         <div
-          className={`${showCart ? "w-[36%] px-8" : "w-0"} h-screen overflow-auto bg-white float-right py-8.5 transition-all duration-300`}
+          className={`${showCart ? "w-[36%] px-8" : "w-0"} h-screen bg-white float-right pt-8.5 pb-32 transition-all duration-300`}
         >
-          <div className="w-full flex items-center justify-between border-b border-input pb-8.5">
-            <h2 className="font-dm-serif text-4xl text-near-black flex items-start gap-x-3">
-              Your cart{" "}
-              <span className="text-sm text-muted font-dm-sans mt-2">
-                ({cart?.items.length || 0})
-              </span>
-            </h2>
+          <div className="no-scrollbar h-[calc(100vh-345px)] pb-8 overflow-y-auto">
+            <div className="w-full flex items-center justify-between border-b border-input pb-8.5">
+              <h2 className="font-dm-serif text-4xl text-near-black flex items-start gap-x-3">
+                Your cart{" "}
+                <span className="text-sm text-muted font-dm-sans mt-2">
+                  ({cart?.items.length || 0})
+                </span>
+              </h2>
 
-            <button type="button" onClick={() => setShowCart(false)}>
-              <X size={22} className="text-near-black" />
-            </button>
-          </div>
+              <button type="button" onClick={() => setShowCart(false)}>
+                <X size={22} className="text-near-black" />
+              </button>
+            </div>
 
-          {/* Cart items */}
-          <div>
-            {cart?.items.length === 0 && (
-              <p className="text-muted text-center py-12">
-                No items in cart yet.
-              </p>
-            )}
+            {/* Cart items */}
+            <div>
+              {cart?.items.length === 0 && (
+                <p className="text-muted text-center py-12">
+                  No items in cart yet.
+                </p>
+              )}
 
-            {cart?.items &&
-              cart.items.length > 0 &&
-              cart.items.map((item) => (
-                <div
-                  key={item.id}
-                  className="w-full py-7 border-b border-input flex gap-x-5"
-                >
-                  <img
-                    src={item.merchandise.image.url}
-                    alt={`${item.merchandise.product.handle} cover image`}
-                    className="w-26 h-33 object-cover"
-                  />
-                  <div className="w-full flex flex-col gap-y-3">
-                    <div className="flex justify-between gap-x-4">
-                      <div className="flex flex-col gap-y-3">
-                        <p>{item.merchandise.product.title}</p>
-                        {/*<span>{item.merchandise.}</span>*/}
+              {cart?.items &&
+                cart.items.length > 0 &&
+                cart.items.map((item) => (
+                  <div
+                    key={item.id}
+                    className="w-full py-7 border-b border-input flex gap-x-5"
+                  >
+                    <img
+                      src={item.merchandise.image.url}
+                      alt={`${item.merchandise.product.handle} cover image`}
+                      className="w-26 h-33 object-cover"
+                    />
+                    <div className="w-full flex flex-col gap-y-3">
+                      <div className="flex justify-between gap-x-4">
+                        <div className="flex flex-col gap-y-3">
+                          <p>{item.merchandise.product.title}</p>
+                          {/*<span>{item.merchandise.}</span>*/}
+                        </div>
+                        <p>
+                          {getCurrencySymbolFromCode(
+                            item.cost.totalAmount.currencyCode,
+                            Number(item.cost.totalAmount.amount),
+                          )}
+                        </p>
                       </div>
-                      <p>
-                        {getCurrencySymbolFromCode(
-                          item.cost.totalAmount.currencyCode,
-                          Number(item.cost.totalAmount.amount),
-                        )}
-                      </p>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div className="w-27 px-3 h-9 border border-input flex items-center justify-between">
+                      <div className="flex items-center justify-between">
+                        <div className="w-27 px-3 h-9 border border-input flex items-center justify-between">
+                          <button
+                            type="button"
+                            disabled={updatingCartQuantity}
+                            onClick={async () => {
+                              setUpdatingCartQuantity(true);
+                              await updateCartQuantity(
+                                item.id,
+                                item.quantity === 1 ? 1 : item.quantity - 1,
+                              );
+                              setUpdatingCartQuantity(false);
+                            }}
+                          >
+                            -
+                          </button>
+                          <span>{item.quantity}</span>
+                          <button
+                            type="button"
+                            disabled={updatingCartQuantity}
+                            onClick={async () => {
+                              setUpdatingCartQuantity(true);
+                              await updateCartQuantity(
+                                item.id,
+                                item.quantity + 1,
+                              );
+                              setUpdatingCartQuantity(false);
+                            }}
+                          >
+                            +
+                          </button>
+                        </div>
                         <button
                           type="button"
                           disabled={updatingCartQuantity}
                           onClick={async () => {
                             setUpdatingCartQuantity(true);
-                            await updateCartQuantity(
-                              item.id,
-                              item.quantity === 1 ? 1 : item.quantity - 1,
-                            );
+                            await removeCartItem(item.id);
                             setUpdatingCartQuantity(false);
                           }}
+                          className="text-sm text-near-black underline"
                         >
-                          -
-                        </button>
-                        <span>{item.quantity}</span>
-                        <button
-                          type="button"
-                          disabled={updatingCartQuantity}
-                          onClick={async () => {
-                            setUpdatingCartQuantity(true);
-                            await updateCartQuantity(
-                              item.id,
-                              item.quantity + 1,
-                            );
-                            setUpdatingCartQuantity(false);
-                          }}
-                        >
-                          +
+                          Remove
                         </button>
                       </div>
-                      <button
-                        type="button"
-                        disabled={updatingCartQuantity}
-                        onClick={async () => {
-                          setUpdatingCartQuantity(true);
-                          await removeCartItem(item.id);
-                          setUpdatingCartQuantity(false);
-                        }}
-                        className="text-sm text-near-black underline"
-                      >
-                        Remove
-                      </button>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
+            </div>
           </div>
 
           <div
-            className={`${showCart ? "w-[36%] px-8" : "w-0"} bg-white fixed bottom-0 right-0 border-t border-input py-7 transition-all duration-300`}
+            className={`${showCart ? "w-[36%] px-8" : "w-0"} h-86.25 bg-white fixed bottom-0 right-0 border-t border-input py-7 transition-all duration-300`}
           >
             <div className="flex items-end gap-x-3 border-b border-input pb-6 mb-6">
               <TextField
@@ -307,7 +322,7 @@ export default function Navbar() {
                 setShowCart(false);
                 if (pathname !== "collections") {
                   navigate({
-                    to: "/collections",
+                    to: "/products",
                     search: {
                       priceRange: "0,200",
                       productType: "wigs",

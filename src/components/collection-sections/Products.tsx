@@ -172,7 +172,7 @@ export default function CollectionProducts(props: Props) {
                 <div className="shrink-0 flex items-start justify-between">
                   <div className="flex flex-col gap-y-2">
                     <Link
-                      to="/collection/$slug"
+                      to="/product/$slug"
                       className="group-hover:underline underline-offset-4"
                       params={{ slug: product.slug }}
                       search={{ collection: product.collections?.[0]?.slug }}

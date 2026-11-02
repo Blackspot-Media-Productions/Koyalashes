@@ -7,10 +7,15 @@ import { getCurrencySymbolFromCode } from "~/lib/utils";
 import { addToCart } from "~/shopify/requests/cart";
 import { getProductsByCollection } from "~/shopify/requests/product";
 
+const categoryMap = {
+  "Wigs": "Wigs",
+  "False Eyelashes": "Eyelashes"
+}
+
 export default function Product() {
-  const { slug } = useParams({ from: "/collection/$slug" });
-  const data = useLoaderData({ from: "/collection/$slug" });
-  const { collection } = useSearch({ from: "/collection/$slug" });
+  const { slug } = useParams({ from: "/product/$slug" });
+  const data = useLoaderData({ from: "/product/$slug" });
+  const { collection } = useSearch({ from: "/product/$slug" });
 
   if (!data) {
     return Navigate({ to: "/" });
@@ -50,8 +55,8 @@ export default function Product() {
       <section className="pt-7 pb-16 px-13.75 bg-off-white">
         <div className="kl-container">
           <p className="text-sm text-muted">
-            All collections&nbsp;&nbsp;/&nbsp;&nbsp;
-            {data.product.category?.name}
+            All products&nbsp;&nbsp;/&nbsp;&nbsp;
+            {categoryMap[data.product.category?.name as keyof typeof categoryMap]}
             &nbsp;&nbsp;/&nbsp;&nbsp;
             <span className="text-near-black">{data.product.title}</span>
           </p>
@@ -169,7 +174,7 @@ export default function Product() {
           <div className="w-full flex items-center justify-between">
             <h2 className="text-4xl font-dm-serif text-near-black">More from the collection</h2>
             <Link
-              to="/collections"
+              to="/products"
               search={{ priceRange: "0,200", productType: "wigs", collections: collection }}
               className="text-primary text-sm"
             >
@@ -202,12 +207,12 @@ export default function Product() {
                       <img
                         src={product.images[0].url}
                         alt={`${product.slug} cover image`}
-                        className="h-full object-cover"
+                        className="h-full object-cover shrink"
                       />
                       <div className="shrink-0 flex items-start justify-between">
                         <div className="flex flex-col gap-y-2">
                           <Link
-                            to="/collection/$slug"
+                            to="/product/$slug"
                             className="group-hover:underline underline-offset-4"
                             params={{ slug: product.slug }}
                             search={{ collection: product.collections?.[0]?.slug }}

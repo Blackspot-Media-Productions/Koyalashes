@@ -5,7 +5,7 @@ import type { SCartAdd, SCartCreate, SCartGet } from "../types/cart.types";
 import { getCookie, KEYS, saveCookie } from "~/lib/utils";
 import { toCart } from "../utils";
 import { getDefaultStore } from "jotai";
-import { cartAtom } from "~/store/cart.store";
+import { cartAtom, prevCartLengthAtom } from "~/store/cart.store";
 
 export async function createCart(
   variantId: string,
@@ -105,6 +105,11 @@ export async function getCart() {
   if (!errors) {
     const store = getDefaultStore();
     const cartData = toCart(data.cart);
+
+    const cart = store.get(cartAtom);
+    if (cart === null) {
+      store.set(prevCartLengthAtom, cartData.items.length);
+    }
 
     store.set(cartAtom, cartData);
   }

@@ -60,7 +60,7 @@ const productsFilterMap = [
 export default function Collections() {
   const navigate = useNavigate();
   const collections = useAtomValue(collectionsAtom);
-  const search = useSearch({ from: "/collections" });
+  const search = useSearch({ from: "/products" });
 
   const [sortBy, setSortBy] = useState<"featured" | "newest" | "oldest">("newest");
 
@@ -73,7 +73,7 @@ export default function Collections() {
   const debouncedNavigate = useMemo(() => {
     return debounce((freshUrlObject: typeof search) => {
       navigate({
-        to: "/collections",
+        to: "/products",
         search: freshUrlObject,
         replace: true,
         resetScroll: false,
@@ -159,7 +159,7 @@ export default function Collections() {
       debouncedNavigate(urlObject);
     } else {
       navigate({
-        to: "/collections",
+        to: "/products",
         search: urlObject,
         replace: true,
         resetScroll: false,
@@ -199,7 +199,7 @@ export default function Collections() {
                   priceRange: { max: 200, min: 0 },
                 });
                 navigate({
-                  to: "/collections",
+                  to: "/products",
                   search: {
                     productType: "wigs",
                     priceRange: "0,200",

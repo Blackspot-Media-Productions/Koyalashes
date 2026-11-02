@@ -9,7 +9,7 @@ const productSearchSchema = z.object({
 
 const productCounts = { images: 10, product: 10, variants: 10 };
 
-export const Route = createFileRoute("/collection/$slug")({
+export const Route = createFileRoute("/product/$slug")({
   validateSearch: (search) => productSearchSchema.parse(search),
   loader: ({ params }) => getProductBySlug(params.slug, productCounts),
   component: RouteComponent,

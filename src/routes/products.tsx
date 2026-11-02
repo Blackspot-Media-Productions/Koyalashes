@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
-import Collections from '~/app/Collections'
+import Collections from '~/app/Products'
 import { z } from "zod";
 
 const collectionSearchSchema = z.object({
@@ -9,7 +9,7 @@ const collectionSearchSchema = z.object({
   sortBy: z.string().optional()
 })
 
-export const Route = createFileRoute('/collections')({
+export const Route = createFileRoute('/products')({
   validateSearch: (search) => collectionSearchSchema.parse(search),
   component: RouteComponent,
 })

@@ -93,7 +93,7 @@ export default function Homepage() {
                       </h1>
 
                       <Link
-                        to="/collection/$slug"
+                        to="/product/$slug"
                         params={{ slug: product.slug }}
                         search={{ collection: "featured" }}
                         className={`w-fit bg-primary text-near-black px-6 py-3.5 disabled:bg-off-white disabled:text-muted disabled:cursor-default!`}
@@ -150,7 +150,7 @@ export default function Homepage() {
                     </p>
                     <Button
                       as="link"
-                      href={`/collections?productType=wigs&priceRange=0%2C200&collections=${collection.slug}`}
+                      href={`/products?productType=wigs&priceRange=0%2C200&collections=${collection.slug}`}
                     >
                       Shop now
                     </Button>
@@ -220,7 +220,7 @@ export default function Homepage() {
                   <div className="shrink-0 flex items-start justify-between">
                     <div className="flex flex-col gap-y-2">
                       <Link
-                        to="/collection/$slug"
+                        to="/product/$slug"
                         className="group-hover:underline underline-offset-4"
                         params={{ slug: product.slug }}
                         search={{ collection: product.collections?.[0]?.slug }}
@@ -298,7 +298,7 @@ export default function Homepage() {
                           />
                           <div className="flex flex-col gap-y-2">
                             <Link
-                              to="/collection/$slug"
+                              to="/product/$slug"
                               className="group-hover:underline underline-offset-4"
                               params={{ slug: product.slug }}
                               search={{ collection: product.collections?.[0]?.slug }}

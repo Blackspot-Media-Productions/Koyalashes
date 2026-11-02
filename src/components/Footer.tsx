@@ -10,8 +10,8 @@ const footerLinks = [
   {
     title: "collection",
     links: [
-      { label: "Wigs", route: "/collections?productType=wigs" },
-      { label: "Eyelashes", route: "/collections?productType=eyelashes" },
+      { label: "Wigs", route: "/products?productType=wigs" },
+      { label: "Eyelashes", route: "/products?productType=eyelashes" },
       // { label: "Cushions", route: "/about" },
       // { label: "Dresses", route: "/about" },
     ]
@@ -36,7 +36,7 @@ const footerLinks = [
 export default function Footer() {
   return (
     <footer className="w-full bg-near-black px-22.5 py-15 flex justify-between gap-x-42.5">
-      <img src="/img/koyalashes-logo.svg" alt="brand logo" className="w-[26%]" />
+      <img src="/img/koyalashes-logo.svg" alt="brand logo" className="w-[15%]" />
       {/* gap-x-31.5 */}
       <div className="w-full flex justify-between">
         {footerLinks.map((footerLink) => (
