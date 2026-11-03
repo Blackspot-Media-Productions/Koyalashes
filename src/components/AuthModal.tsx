@@ -61,7 +61,7 @@ export default function AuthModal(props: Props) {
         firstName: (form.get("firstName") as string) || "",
         lastName: (form.get("lastName") as string) || "",
         email: (form.get("email") as string) || "",
-        phone: (form.get("phone") as string) || "",
+        // phone: (form.get("phone") as string) || "",
         password: (form.get("password") as string) || "",
         acceptsMarketing,
       };
@@ -70,7 +70,7 @@ export default function AuthModal(props: Props) {
         !payload.email ||
         !payload.password ||
         !payload.firstName ||
-        !payload.phone ||
+        // !payload.phone ||
         !payload.lastName
       ) {
         setError((current) => ({
@@ -82,13 +82,17 @@ export default function AuthModal(props: Props) {
 
       setInProgress(true)
       await createCustomer(payload);
+      console.log("hiii")
     } catch (error) {
       let errorMessage = "Something went wrong";
       if (Array.isArray(error)) {
         errorMessage = error[0].message;
+      } else if (error instanceof Error) {
+        errorMessage = error.message
       }
 
-      setError((current) => ({ ...current, login: errorMessage }));
+      console.log(error)
+      setError((current) => ({ ...current, signup: errorMessage }));
     } finally {
       setInProgress(false)
     }
@@ -181,7 +185,7 @@ export default function AuthModal(props: Props) {
                   name="email"
                   placeholder="Email address"
                 />
-                <TextField id="phone" name="phone" placeholder="Phone number" />
+                {/*<TextField id="phone" name="phone" placeholder="Phone number" />*/}
                 <TextField
                   type="password"
                   id="password"

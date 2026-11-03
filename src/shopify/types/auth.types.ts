@@ -4,7 +4,7 @@ export type CustomerInput = {
   firstName: string;
   lastName: string;
   password: string;
-  phone: string;
+  // phone: string;
 };
 
 type CustomerErrors = {
@@ -23,6 +23,10 @@ export type SCustomer = {
   };
   customerUserErrors: CustomerErrors[];
 };
+
+export type SCustomerCreate = {
+  customerCreate: SCustomer
+}
 
 export type CustomerAccessToken = {
   customerAccessTokenCreate: {

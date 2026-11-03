@@ -11,6 +11,7 @@ import type {
   CustomerAccessToken,
   CustomerInput,
   SCustomer,
+  SCustomerCreate,
   SCustomerReset,
   SCustomerResetComplete,
 } from "../types/auth.types";
@@ -46,16 +47,31 @@ async function createCustomerAccessToken(input: {
  * @returns {Promise<{ errors: any[] | null; data: SCustomer | null }>} An object containing either the created customer data or Shopify user/access token errors.
  */
 export async function createCustomer(input: CustomerInput) {
-  const { errors } = (await client.request(signupMutation, {
+  const { errors, data } = (await client.request(signupMutation, {
     variables: { input },
-  })) as ShopifyResponse<SCustomer>;
+  })) as ShopifyResponse<SCustomerCreate>;
 
   if (errors) throw errors;
+
+  if (data.customerCreate.customerUserErrors.length > 0) {
+    throw data.customerCreate.customerUserErrors;
+  }
 
   const accessTokenResult = await createCustomerAccessToken({
     email: input.email,
     password: input.password,
   });
+
+  if (
+    accessTokenResult.errors !== null &&
+    (accessTokenResult.errors?.graphQLErrors?.length || 0) > 0
+  ) {
+    throw new Error(accessTokenResult.errors?.graphQLErrors?.[0].message);
+  }
+
+  if (accessTokenResult.data.customerAccessTokenCreate.customerUserErrors.length > 0) {
+    throw accessTokenResult.data.customerAccessTokenCreate.customerUserErrors;
+  }
 
   const tokenResult = handleToken(accessTokenResult);
   if (tokenResult.errors !== null) {
@@ -80,6 +96,17 @@ export async function loginCustomer(input: {
 }) {
   const accessTokenResult = await createCustomerAccessToken(input);
 
+  if (
+    accessTokenResult.errors !== null &&
+    (accessTokenResult.errors?.graphQLErrors?.length || 0) > 0
+  ) {
+    throw new Error(accessTokenResult.errors?.graphQLErrors?.[0].message);
+  }
+
+  if (accessTokenResult.data.customerAccessTokenCreate.customerUserErrors.length > 0) {
+    throw accessTokenResult.data.customerAccessTokenCreate.customerUserErrors;
+  }
+
   const tokenResult = handleToken(accessTokenResult);
   if (tokenResult.errors !== null) {
     throw tokenResult.errors;
@@ -97,9 +124,9 @@ export async function loginCustomer(input: {
 export async function fetchCustomer(accessToken: string | null) {
   if (!accessToken) return { errors: null, data: null };
 
-  const { data, errors } = await client.request(fetchUserQuery, {
+  const { data, errors } = (await client.request(fetchUserQuery, {
     variables: { customerAccessToken: accessToken },
-  }) as ShopifyResponse<SCustomer>;
+  })) as ShopifyResponse<SCustomer>;
 
   if (errors) throw errors;
 
@@ -119,9 +146,9 @@ export async function fetchCustomer(accessToken: string | null) {
  * @throws {ShopifyError[]} Throws Shopify request-level errors if the API call fails.
  */
 export async function requestPasswordReset(email: string) {
-  const { data, errors } = await client.request(requestPswdResetMutation, {
-    variables: { email }
-  }) as ShopifyResponse<SCustomerReset>;
+  const { data, errors } = (await client.request(requestPswdResetMutation, {
+    variables: { email },
+  })) as ShopifyResponse<SCustomerReset>;
 
   if (errors) throw errors;
 
@@ -142,9 +169,9 @@ export async function requestPasswordReset(email: string) {
  * @throws {ShopifyError[]} Throws Shopify request-level errors if the API call fails.
  */
 export async function resetPassword(resetUrl: string, password: string) {
-  const { data, errors } = await client.request(resetPasswordMutation, {
-    variables: { resetUrl, password }
-  }) as ShopifyResponse<SCustomerResetComplete>;
+  const { data, errors } = (await client.request(resetPasswordMutation, {
+    variables: { resetUrl, password },
+  })) as ShopifyResponse<SCustomerResetComplete>;
 
   if (errors) throw errors;
 
@@ -160,7 +187,7 @@ export async function logoutCustomer() {
   const accessToken = getCookie(KEYS.CUSTOMER_TOKEN_COOKIE);
   if (!accessToken) return null;
   const { data, errors } = await client.request(logoutCustomerMutation, {
-    variables: { customerAccessToken: accessToken }
+    variables: { customerAccessToken: accessToken },
   });
 
   if (!errors && data?.customerAccessTokenDelete.userErrors.length === 0) {

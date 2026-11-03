@@ -42,8 +42,12 @@ const RootLayout = () => {
   );
 };
 
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
 export const Route = createRootRouteWithContext<KRouterContext>()({
   loader: async ({ context }) => {
+    await delay(6000);
+
     return context.queryClient.query(collectionQueryOptions);
   },
 

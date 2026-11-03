@@ -128,32 +128,36 @@ export default function Navbar() {
               <User2 size={24} className="text-off-white" />
             </button>
 
-            {customer && <div className="hidden group-hover:flex flex-col gap-y-2 absolute right-0 p-4 mt-4 bg-white before:absolute before:-top-4 before:h-4 before:w-full">
-              <div className="flex gap-x-3 border-b border-input pb-4">
-                <span className="w-9 h-9 bg-grey rounded-full grid place-content-center">
-                  <User2 size={24} className="text-muted" />
-                </span>
-                <div>
-                  <p>
-                    {customer?.firstName} {customer?.lastName}
-                  </p>
-                  <span className="text-sm text-muted">{customer?.email}</span>
+            {customer && (
+              <div className="hidden group-hover:flex flex-col gap-y-2 absolute right-0 p-4 mt-4 bg-white before:absolute before:-top-4 before:h-4 before:w-full">
+                <div className="flex gap-x-3 border-b border-input pb-4">
+                  <span className="w-9 h-9 bg-grey rounded-full grid place-content-center">
+                    <User2 size={24} className="text-muted" />
+                  </span>
+                  <div>
+                    <p>
+                      {customer?.firstName} {customer?.lastName}
+                    </p>
+                    <span className="text-sm text-muted">
+                      {customer?.email}
+                    </span>
+                  </div>
                 </div>
-              </div>
 
-              <button
-                type="button"
-                disabled={loggingOut}
-                onClick={async () => {
-                  setLoggingOut(true);
-                  await logoutCustomer();
-                  setLoggingOut(false);
-                }}
-                className="rounded text-red-500 text-sm text-left hover:bg-red-100 py-1 px-3"
-              >
-                Log out
-              </button>
-            </div>}
+                <button
+                  type="button"
+                  disabled={loggingOut}
+                  onClick={async () => {
+                    setLoggingOut(true);
+                    await logoutCustomer();
+                    setLoggingOut(false);
+                  }}
+                  className="rounded text-red-500 text-sm text-left hover:bg-red-100 py-1 px-3"
+                >
+                  Log out
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </nav>
@@ -166,22 +170,22 @@ export default function Navbar() {
         className={`${showCart ? "w-full" : "w-0"} h-screen bg-near-black/60 fixed z-99999 top-0 left-0`}
       >
         <div
-          className={`${showCart ? "w-[36%] px-8" : "w-0"} h-screen bg-white float-right pt-8.5 pb-32 transition-all duration-300`}
+          className={`${showCart ? "w-[36%] px-8" : "w-0"} h-screen bg-white float-right pb-32 transition-all duration-300`}
         >
-          <div className="no-scrollbar h-[calc(100vh-345px)] pb-8 overflow-y-auto">
-            <div className="w-full flex items-center justify-between border-b border-input pb-8.5">
-              <h2 className="font-dm-serif text-4xl text-near-black flex items-start gap-x-3">
-                Your cart{" "}
-                <span className="text-sm text-muted font-dm-sans mt-2">
-                  ({cart?.items.length || 0})
-                </span>
-              </h2>
+          <div className={`${showCart ? "w-full flex" : "w-0 hidden"} h-28 items-center justify-between border-b border-input`}>
+            <h2 className="font-dm-serif text-4xl text-near-black flex items-start gap-x-3">
+              Your cart{" "}
+              <span className="text-sm text-muted font-dm-sans mt-2">
+                ({cart?.items.length || 0})
+              </span>
+            </h2>
 
-              <button type="button" onClick={() => setShowCart(false)}>
-                <X size={22} className="text-near-black" />
-              </button>
-            </div>
+            <button type="button" onClick={() => setShowCart(false)}>
+              <X size={22} className="text-near-black" />
+            </button>
+          </div>
 
+          <div className="no-scrollbar h-[calc(100vh-457px)] overflow-y-auto">
             {/* Cart items */}
             <div>
               {cart?.items.length === 0 && (
